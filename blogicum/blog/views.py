@@ -50,7 +50,8 @@ posts = [
 
 def index(request):
     template = 'blog/index.html'
-    context = {'post_list': posts}
+    context = {'post_list': posts,
+               'request': request}
     return render(request, template, context)
 
 

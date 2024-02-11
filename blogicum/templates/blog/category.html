@@ -3,58 +3,26 @@
 {% block title_name %}
 Публикации в категории - {{ category_slug }}
 {% endblock %}
-{% block header_content %}
-<header>
-  <nav class="navbar navbar-light" style="background-color: lightskyblue">
-    <div class="container">
-      <a class="navbar-brand" href="{% url 'blog:index' %}">
-        <img src="{% static 'img/logo.png' %}" width="30" height="30"
-             class="d-inline-block align-top" alt="">
-        Блогикум
-      </a>
-      <ul class="nav nav-pills">
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'blog:index' %}">
-            Лента записей
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'pages:about' %}">
-            О проекте
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'pages:rules' %}">
-            Наши правила
-          </a>
-        </li>
-      </ul>
-    </div>
-  </nav>
-</header>
-{% endblock %}
 {% block content %}
-<div class="container py-5">
-  <h1>Публикации в категории - {{ category_slug }}</h1>
-  <ul>
-    {% for post in post_list reversed %}
-    <hr>
-    <article>
-      <li>
-        {{ post.location }}
-      </li>
-      <li>
-        {{ post.date }}
-      </li>
-      <li>
-        Категория: <a href="/category/{{ post.category }}">{{ post.category }}</a>
-      </li>
-      <p>
-        {{ post.text|truncatewords:10 }}
-      </p>
-      <a href="{% url 'blog:post_detail' post.id %}">Читать полный текст</a>
-    </article>
-    {% endfor %}
-  </ul>
-</div>
+<h1>Публикации в категории - {{ category_slug }}</h1>
+<ul>
+  {% for post in post_list reversed %}
+  <hr>
+  <article>
+    <li>
+      {{ post.location }}
+    </li>
+    <li>
+      {{ post.date }}
+    </li>
+    <li>
+      Категория: <a href="/category/{{ post.category }}">{{ post.category }}</a>
+    </li>
+    <p>
+      {{ post.text|truncatewords:10 }}
+    </p>
+    <a href="{% url 'blog:post_detail' post.id %}">Читать полный текст</a>
+  </article>
+  {% endfor %}
+</ul>
 {% endblock %}
