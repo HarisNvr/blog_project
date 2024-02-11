@@ -1,3 +1,4 @@
+from django.http import Http404
 from django.shortcuts import render
 
 app_name = 'blog'
@@ -5,7 +6,7 @@ app_name = 'blog'
 
 posts = [
     {
-        'id': 0,
+        'id': 415789,
         'location': 'Остров отчаянья',
         'date': '30 сентября 1659 года',
         'category': 'travel',
@@ -17,7 +18,7 @@ posts = [
                 который назвал островом Отчаяния.''',
     },
     {
-        'id': 1,
+        'id': 14324,
         'location': 'Остров отчаянья',
         'date': '1 октября 1659 года',
         'category': 'not-my-day',
@@ -33,7 +34,7 @@ posts = [
                 гиблого места.''',
     },
     {
-        'id': 2,
+        'id': 232,
         'location': 'Остров отчаянья',
         'date': '25 октября 1659 года',
         'category': 'not-my-day',
@@ -55,7 +56,11 @@ def index(request):
 
 def detail(request, id):
     template = 'blog/detail.html'
-    context = {'post': posts[id]}
+    try:
+        post = next(post for post in posts if post['id'] == id)
+    except StopIteration:
+        raise Http404('Пост не найден')
+    context = {'post': post}
     return render(request, template, context)
 
 

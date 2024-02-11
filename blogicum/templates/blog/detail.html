@@ -1,35 +1,36 @@
 {% extends "base.html" %}
 {% load static %}
 {% block title_name %}
-<title>{{ post.location }} {{ post.date }}</title>
+{{ post.location }} {{ post.date }}
 {% endblock %}
 {% block header_content %}
 <header>
-    <nav class="navbar navbar-light" style="background-color: lightskyblue">
-        <div class="container">
-            <a class="navbar-brand" href="{% url 'blog:index' %}">
-                <img src="{% static 'img/logo.png' %}" width="30" height="30" class="d-inline-block align-top" alt="">
-                Блогикум
-            </a>
-            <ul class="nav  nav-pills">
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'blog:index' %}">
-                        Лента записей
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'pages:about' %}">
-                        О проекте
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'pages:rules' %}">
-                        Наши правила
-                    </a>
-                </li>
-            </ul>
-        </div>
-    </nav>
+  <nav class="navbar navbar-light" style="background-color: lightskyblue">
+    <div class="container">
+      <a class="navbar-brand" href="{% url 'blog:index' %}">
+        <img src="{% static 'img/logo.png' %}" width="30" height="30"
+             class="d-inline-block align-top" alt="">
+        Блогикум
+      </a>
+      <ul class="nav  nav-pills">
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'blog:index' %}">
+            Лента записей
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'pages:about' %}">
+            О проекте
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'pages:rules' %}">
+            Наши правила
+          </a>
+        </li>
+      </ul>
+    </div>
+  </nav>
 </header>
 {% endblock %}
 {% block content %}
@@ -43,7 +44,8 @@
         {{ post.date }}
       </li>
       <li>
-        Категория: <a href="/category/{{ post.category }}">{{ post.category }}</a>
+        Категория: <a href="/category/{{ post.category }}">
+        {{post.category}}</a>
       </li>
     </ul>
     <p>
