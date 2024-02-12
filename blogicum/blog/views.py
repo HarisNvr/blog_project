@@ -54,11 +54,12 @@ def index(request):
     return render(request, template, context)
 
 
-def detail(request, id):
+def detail(request, post_id):
     template = 'blog/detail.html'
+    posts_dict = {post['id']: post for post in posts}
     try:
-        post = next(post for post in posts if post['id'] == id)
-    except StopIteration:
+        post = posts_dict[post_id]
+    except KeyError:
         raise Http404('Пост не найден')
     context = {'post': post}
     return render(request, template, context)
