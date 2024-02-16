@@ -1,6 +1,5 @@
 from django.shortcuts import render, get_object_or_404
 from .models import Category, Post
-from django.http import Http404
 from django.utils import timezone
 
 app_name = 'blog'
