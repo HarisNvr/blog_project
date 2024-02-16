@@ -21,19 +21,14 @@ def index(request):
 
 
 def detail(request, post_id):
-    post = Post.objects.all(
-    ).filter(
-        category__is_published=True,
+    post = get_object_or_404(
+        Post,
         is_published=True,
-        pub_date__lte=timezone.now()
-    ).order_by(
-        '-pub_date'
-    )[post_id]
+        category__is_published=True,
+        pub_date__lte=timezone.now(),
+        pk=post_id
+    )
     template = 'blog/detail.html'
-    try:
-        post
-    except Exception:
-        raise Http404('Пост не найден')
     context = {'post': post}
     return render(request, template, context)
 
