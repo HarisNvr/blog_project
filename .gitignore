@@ -147,8 +147,3 @@ dmypy.json
 
 # папки со статикой и медиа
 media/
-
-# Testing
-build_tests/
-yap_testing
-blogicum/templates/html/img/img/

@@ -1,27 +1,12 @@
 {% extends "base.html" %}
-{% block title_name %}
+{% block title %}
   Лента записей
 {% endblock %}
 {% block content %}
-<h1>Лента записей</h1>
-<ul>
-  {% for post in post_list|dictsortreversed:'id' %}
-  <hr>
-  <article>
-    <li>
-      {{ post.location }}
-    </li>
-    <li>
-      {{ post.date }}
-    </li>
-    <li>
-      Категория: <a href="{% url 'blog:category_posts' post.category %}">{{ post.category }}</a>
-    </li>
-    <p>
-      {{ post.text|truncatewords:10 }}
-    </p>
-    <a href="{% url 'blog:post_detail' post.id %}">Читать полный текст</a>
-  </article>
+  <h1 class="mb-5">Лента записей</h1>
+  {% for post in post_list %}
+    <article class="mb-5">  
+      {% include "includes/post_card.html" %}
+    </article>   
   {% endfor %}
-</ul>
 {% endblock %}

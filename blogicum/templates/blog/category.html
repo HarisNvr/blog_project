@@ -1,27 +1,14 @@
 {% extends "base.html" %}
-{% block title_name %}
-  Публикации в категории - {{ category_slug }}
+{% block title %}
+  Публикации в категории «{{ category.title }}»
 {% endblock %}
 {% block content %}
-<h1>Публикации в категории - {{ category_slug }}</h1>
-<ul>
-  {% for post in post_list reversed %}
-  <hr>
-  <article>
-    <li>
-      {{ post.location }}
-    </li>
-    <li>
-      {{ post.date }}
-    </li>
-    <li>
-      Категория: <a href="{% url 'blog:category_posts' post.category %}">{{ post.category }}</a>
-    </li>
-    <p>
-      {{ post.text|truncatewords:10 }}
-    </p>
-    <a href="{% url 'blog:post_detail' post.id %}">Читать полный текст</a>
-  </article>
-  {% endfor %}
-</ul>
+<h1>Публикации в категории «{{ category.title }}»</h1>
+<p class="mb-5">{{ category.description }}</p>
+{% for post in post_list %}
+  <article class="mb-5">  
+    {% include "includes/post_card.html" %}
+  </article>   
+{% endfor %}
+
 {% endblock %}
