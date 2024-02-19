@@ -1,15 +1,17 @@
-from django.utils import timezone
-
 from django.shortcuts import render, get_object_or_404
+from django.utils import timezone
 
 from .models import Category, Post
 
-
-disp_last_posts = 5
+DISP_LAST_POSTS = 5
 
 
 def base_request():
-    return Post.objects.select_related('category', 'author').filter(
+    return Post.objects.select_related(
+        'category',
+        'author',
+        'location'
+    ).filter(
         is_published=True,
         category__is_published=True,
         pub_date__lte=timezone.now()
@@ -17,14 +19,7 @@ def base_request():
 
 
 def index(request):
-    posts = Post.objects.all(
-    ).filter(
-        category__is_published=True,
-        is_published=True,
-        pub_date__lte=timezone.now()
-    ).order_by(
-        '-pub_date'
-    )[:disp_last_posts]
+    posts = base_request()[:DISP_LAST_POSTS]
     template = 'blog/index.html'
     context = {'post_list': posts}
     return render(request, template, context)

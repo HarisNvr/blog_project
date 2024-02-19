@@ -1,9 +1,8 @@
+from django.contrib.auth import get_user_model
 from django.db import models
 
-from django.contrib.auth import get_user_model
-
-User = get_user_model()
-mx_chars = 256
+USER = get_user_model()
+MX_CHARS = 256
 
 
 class BaseModel(models.Model):
@@ -23,7 +22,7 @@ class BaseModel(models.Model):
 
 class Category(BaseModel):
     title = models.CharField(
-        max_length=mx_chars,
+        max_length=MX_CHARS,
         verbose_name='Заголовок'
     )
     description = models.TextField(
@@ -46,7 +45,7 @@ class Category(BaseModel):
 
 class Location(BaseModel):
     name = models.CharField(
-        max_length=mx_chars,
+        max_length=MX_CHARS,
         verbose_name='Название места'
     )
 
@@ -60,7 +59,7 @@ class Location(BaseModel):
 
 class Post(BaseModel):
     title = models.CharField(
-        max_length=mx_chars,
+        max_length=MX_CHARS,
         verbose_name='Заголовок'
     )
     text = models.TextField(
@@ -72,7 +71,7 @@ class Post(BaseModel):
                   'отложенные публикации.'
     )
     author = models.ForeignKey(
-        User,
+        USER,
         on_delete=models.CASCADE,
         verbose_name='Автор публикации',
         related_name='posts'
