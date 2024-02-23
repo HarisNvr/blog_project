@@ -6,9 +6,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-c%jyu_a*$kum3nv01y5km)m_nx9*#cxv=wv@6(cc7+w7bsan%d'
 
 
-DEBUG = True
+DEBUG = False
+
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+
+
+CSRF_FAILURE_VIEW = 'core.views.csrf_failure'
 
 
 INSTALLED_APPS = [
@@ -20,6 +24,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'blog.apps.BlogConfig',
     'pages.apps.PagesConfig',
+    'core.apps.CoreConfig',
     'debug_toolbar',
 ]
 
