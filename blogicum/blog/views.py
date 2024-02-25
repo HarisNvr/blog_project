@@ -98,29 +98,38 @@ def delete_post(request, pk):
 
 
 @login_required
-def commenting(request, post_id, comment_id=None):
+def manage_comment(request, post_id, comment_id=None):
+    post = get_object_or_404(base_request(), pk=post_id)
     instance = None
     if comment_id is not None:
         instance = get_object_or_404(Commentary, id=comment_id)
-    post = get_object_or_404(base_request(), pk=post_id)
-    form = CommentaryForm(request.POST or None, instance=instance)
     if request.method == 'POST':
-        if form.is_valid():
-            comment = form.save(commit=False)
-            comment.author = request.user
-            comment.post = post
-            comment.save()
-            post_detail_url = reverse_lazy('blog:post_detail', args=[post_id])
-            return redirect(post_detail_url)
-    context = {'form': form}
-    return render(request, 'blog/create.html', context)
+        if '/delete_comment/' in request.path:
+            comment = get_object_or_404(Commentary, id=comment_id)
+            comment.delete()
+            post.comment_count -= 1
+            post.save()
+            return redirect('blog:post_detail', post_id=post_id)
+        else:
+            form = CommentaryForm(request.POST or None, instance=instance)
+            if form.is_valid():
+                comment = form.save(commit=False)
+                comment.author = request.user
+                comment.post = post
+                comment.save()
 
+                if comment_id is None:
+                    post.comment_count += 1
+                    post.save()
 
-@login_required
-def delete_comment(request, post_id, comment_id):
-    comment = get_object_or_404(Commentary, id=comment_id)
-    comment.delete()
-    return redirect('blog:post_detail', post_id=post_id)
+                post_detail_url = reverse_lazy('blog:post_detail',
+                                               args=[post_id])
+                return redirect(post_detail_url)
+    else:
+        form = CommentaryForm(instance=instance)
+
+    context = {'form': form, 'comment': instance}
+    return render(request, 'blog/comment.html', context)
 
 
 class CommentaryDetailView(DetailView):
