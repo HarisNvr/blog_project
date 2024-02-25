@@ -1,16 +1,21 @@
 from pathlib import Path
 
+from django.urls import reverse_lazy
+
+LOGIN_REDIRECT_URL = reverse_lazy('blog:homepage')
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+MEDIA_ROOT = BASE_DIR / 'media'
 
 SECRET_KEY = 'django-insecure-c%jyu_a*$kum3nv01y5km)m_nx9*#cxv=wv@6(cc7+w7bsan%d'
 
+USE_L10N = False
 
-DEBUG = False
+DEBUG = True
 
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
-
 
 CSRF_FAILURE_VIEW = 'core.views.csrf_failure'
 
@@ -22,6 +27,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.sessions',
     'django.contrib.staticfiles',
+    'django_bootstrap5',
     'blog.apps.BlogConfig',
     'pages.apps.PagesConfig',
     'core.apps.CoreConfig',
@@ -89,7 +95,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'ru-RU'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Moscow'
 
 USE_I18N = True
 
