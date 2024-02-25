@@ -8,12 +8,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 MEDIA_ROOT = BASE_DIR / 'media'
 
+MEDIA_URL = 'media/'
+
 SECRET_KEY = 'django-insecure-c%jyu_a*$kum3nv01y5km)m_nx9*#cxv=wv@6(cc7+w7bsan%d'
 
 USE_L10N = False
 
 DEBUG = True
 
+EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+
+EMAIL_FILE_PATH = BASE_DIR / 'sent_emails'
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 

@@ -9,12 +9,17 @@ app_name = 'blog'
 urlpatterns = [
     path('', views.homepage, name='homepage'),
     path('posts/<int:post_id>/', views.detail, name='post_detail'),
-    path('posts/<int:post_id>/comment', views.add_comment,
+    path('posts/<int:post_id>/comment', views.commenting,
          name='comment'),
-    path('create_post/', views.posting, name='create_post'),
-    path('posts/<int:pk>/edit', views.posting,
+    path('posts/<int:post_id>/edit_comment/<int:comment_id>/',
+         views.commenting,
+         name='edit_comment'),
+    path('posts/<int:post_id>/delete_comment/<int:comment_id>',
+         views.delete_comment, name='delete_comment'),
+    path('posts/create/', views.posting, name='create_post'),
+    path('posts/<int:pk>/edit/', views.posting,
          name='edit_post'),
-    path('posts/<int:pk>/delete', views.delete_post,
+    path('posts/<int:pk>/delete/', views.delete_post,
          name='delete_post'),
     path('category/<slug:category_slug>/', views.category,
          name='category_posts'),
@@ -22,4 +27,5 @@ urlpatterns = [
          name='profile'),
     path('edit_profile/<str:username>/', views.edit_profile,
          name='edit_profile'),
-]
+
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

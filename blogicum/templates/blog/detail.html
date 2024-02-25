@@ -36,7 +36,9 @@
             </a>
           </div>
         {% endif %}
+        {% if post.is_published and post.category.is_published %}
         {% include "includes/comments.html" %}
+        {% endif %}
       </div>
     </div>
   </div>

@@ -24,7 +24,7 @@ def base_request():
 
 def profile(request, username):
     user = get_object_or_404(User, username=username)
-    posts = base_request().filter(author=user)
+    posts = base_request().filter(author_id=user.id)
     paginator = Paginator(posts, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -43,11 +43,12 @@ def homepage(request):
 
 
 def detail(request, post_id):
-    post = get_object_or_404(base_request(), pk=post_id)
-    form = CommentaryForm(request.POST, instance=post)
-    comment = Commentary.objects.select_related('author')
+    post = get_object_or_404(Post, pk=post_id)
+    form = CommentaryForm()
+    comments = (Commentary.objects.filter(post_id=post_id)
+                .order_by('-created_at'))
     template = 'blog/detail.html'
-    context = {'post': post, 'form': form, 'comment': comment}
+    context = {'post': post, 'form': form, 'comments': comments}
     return render(request, template, context)
 
 
@@ -65,6 +66,7 @@ def category(request, category_slug):
     return render(request, template, context)
 
 
+@login_required
 def posting(request, pk=None):
     instance = None
     if pk is not None:
@@ -77,12 +79,14 @@ def posting(request, pk=None):
             post = form.save(commit=False)
             post.author = request.user
             post.save()
-            post_detail_url = reverse_lazy('blog:post_detail', args=[post.pk])
+            post_detail_url = reverse_lazy('blog:profile',
+                                           args=[request.user.username])
             return redirect(post_detail_url)
     context = {'form': form}
     return render(request, 'blog/create.html', context)
 
 
+@login_required
 def delete_post(request, pk):
     instance = get_object_or_404(Post, pk=pk)
     form = PostForm(instance=instance)
@@ -94,15 +98,28 @@ def delete_post(request, pk):
 
 
 @login_required
-def add_comment(request, post_id):
+def commenting(request, post_id, comment_id=None):
+    instance = None
+    if comment_id is not None:
+        instance = get_object_or_404(Commentary, id=comment_id)
     post = get_object_or_404(base_request(), pk=post_id)
-    form = CommentaryForm(request.POST)
-    if form.is_valid():
-        print('1')
-        comment = form.save(commit=False)
-        comment.author = request.user
-        comment.post = post
-        comment.save()
+    form = CommentaryForm(request.POST or None, instance=instance)
+    if request.method == 'POST':
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.author = request.user
+            comment.post = post
+            comment.save()
+            post_detail_url = reverse_lazy('blog:post_detail', args=[post_id])
+            return redirect(post_detail_url)
+    context = {'form': form}
+    return render(request, 'blog/create.html', context)
+
+
+@login_required
+def delete_comment(request, post_id, comment_id):
+    comment = get_object_or_404(Commentary, id=comment_id)
+    comment.delete()
     return redirect('blog:post_detail', post_id=post_id)
 
 

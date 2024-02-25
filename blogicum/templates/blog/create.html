@@ -24,9 +24,20 @@
       <div class="card-body">
         <form method="post" enctype="multipart/form-data">
           {% csrf_token %}
-          {% if not '/delete' in request.path %}
+          {% if '/delete' not in request.path %}
             {% bootstrap_form form %}
+            <article>
+              {% if form.instance.image %}
+                <a href="{{ form.instance.image.url }}" target="_blank">
+                  <img class="border-3 rounded img-fluid img-thumbnail mb-2" src="{{ form.instance.image.url }}">
+                </a>
+              {% endif %}
+            </article>
+            <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+              {% bootstrap_button button_type="submit" content="Отправить" %}
+            </div>
           {% else %}
+            <h3>Вы уверены, что хотите удалить эту публикацию?</h3>
             <article>
               {% if form.instance.image %}
                 <a href="{{ form.instance.image.url }}" target="_blank">
@@ -37,11 +48,10 @@
               <h3>{{ form.instance.title }}</h3>
               <p>{{ form.instance.text|linebreaksbr }}</p>
             </article>
-          {% endif %}
-          {% if not '/delete' in request.path %}
-          {% bootstrap_button button_type="submit" content="Отправить" %}
-          {% else %}
-          {% bootstrap_button button_type="submit" content="Удалить" %}
+            <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+              <button type="submit" class="btn btn-danger">Удалить</button>
+              <a href="{{ request.path|slice:'0:-7' }}" class="btn btn-outline-primary">Я передумал!</a>
+            </div>
           {% endif %}
         </form>
       </div>
