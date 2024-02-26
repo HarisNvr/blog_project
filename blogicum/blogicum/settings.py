@@ -22,7 +22,7 @@ EMAIL_FILE_PATH = BASE_DIR / 'sent_emails'
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
-CSRF_FAILURE_VIEW = 'core.views.csrf_failure'
+CSRF_FAILURE_VIEW = 'pages.views.csrf_failure'
 
 
 INSTALLED_APPS = [
@@ -35,7 +35,6 @@ INSTALLED_APPS = [
     'django_bootstrap5',
     'blog.apps.BlogConfig',
     'pages.apps.PagesConfig',
-    'core.apps.CoreConfig',
     'debug_toolbar',
 ]
 
