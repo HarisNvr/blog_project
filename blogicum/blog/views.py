@@ -1,6 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
+from django.http import Http404
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.utils import timezone
@@ -77,7 +78,6 @@ def category(request, category_slug):
     return render(request, template, context)
 
 
-@login_required
 def posting(request, pk=None):
     instance = None
     if pk is not None:
@@ -117,12 +117,22 @@ def manage_comment(request, post_id, comment_id=None):
     if request.method == 'POST':
         if '/delete_comment' in request.path:
             comment = get_object_or_404(Commentary, id=comment_id)
-            comment.delete()
-            post.comment_count -= 1
-            post.save()
-            return redirect('blog:post_detail', post_id=post_id)
+            if comment.author == request.user:
+                comment.delete()
+                post.comment_count -= 1
+                post.save()
+                return redirect('blog:post_detail', post_id=post_id)
+            else:
+                raise Http404
         else:
-            form = CommentaryForm(request.POST or None, instance=instance)
+            if comment_id is not None:
+                comment = get_object_or_404(Commentary, id=comment_id)
+                if comment.author == request.user:
+                    form = CommentaryForm(request.POST, instance=instance)
+                else:
+                    raise Http404
+            else:
+                form = CommentaryForm(request.POST, instance=instance)
             if form.is_valid():
                 comment = form.save(commit=False)
                 comment.author = request.user
@@ -137,9 +147,16 @@ def manage_comment(request, post_id, comment_id=None):
                                                args=[post_id])
                 return redirect(post_detail_url)
     else:
-        form = CommentaryForm(instance=instance)
-
-    context = {'form': form, 'comment': instance}
+        if comment_id is not None:
+            comment = get_object_or_404(Commentary, id=comment_id)
+            if comment.author == request.user:
+                form = CommentaryForm(instance=instance)
+            else:
+                raise Http404
+        else:
+            form = CommentaryForm(instance=instance)
+    context = {'form': form, 'comment': instance} if (
+            '/delete_comment' not in request.path) else {'comment': instance}
     return render(request, 'blog/comment.html', context)
 
 
