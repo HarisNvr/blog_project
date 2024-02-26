@@ -25,8 +25,16 @@ def base_request():
 def profile(request, username):
     user_profile = get_object_or_404(User, username=username)
     user = request.user
-    posts = base_request().filter(author_id=user_profile.id)
-    paginator = Paginator(posts, 10)
+    if user_profile == user:
+        context_posts = Post.objects.select_related(
+            'category',
+            'author',
+            'location'
+        ).filter(
+            author_id=user_profile.pk)
+    else:
+        context_posts = base_request().filter(author_id=user_profile.pk)
+    paginator = Paginator(context_posts, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     context = {'user': user,
@@ -49,7 +57,7 @@ def detail(request, post_id):
     post = get_object_or_404(Post, pk=post_id)
     form = CommentaryForm()
     comments = (Commentary.objects.filter(post_id=post_id)
-                .order_by('-created_at'))
+                .order_by('created_at'))
     template = 'blog/detail.html'
     context = {'post': post, 'form': form, 'comments': comments}
     return render(request, template, context)
@@ -60,8 +68,8 @@ def category(request, category_slug):
         Category,
         slug=category_slug,
         is_published=True)
-    posts = base_request().filter(category=category_obj)
-    paginator = Paginator(posts, 10)
+    context_posts = base_request().filter(category=category_obj)
+    paginator = Paginator(context_posts, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     template = 'blog/category.html'
@@ -107,7 +115,7 @@ def manage_comment(request, post_id, comment_id=None):
     if comment_id is not None:
         instance = get_object_or_404(Commentary, id=comment_id)
     if request.method == 'POST':
-        if '/delete_comment/' in request.path:
+        if '/delete_comment' in request.path:
             comment = get_object_or_404(Commentary, id=comment_id)
             comment.delete()
             post.comment_count -= 1
