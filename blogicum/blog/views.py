@@ -23,12 +23,15 @@ def base_request():
 
 
 def profile(request, username):
-    user = get_object_or_404(User, username=username)
-    posts = base_request().filter(author_id=user.id)
+    user_profile = get_object_or_404(User, username=username)
+    user = request.user
+    posts = base_request().filter(author_id=user_profile.id)
     paginator = Paginator(posts, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    context = {'user': user, 'page_obj': page_obj}
+    context = {'user': user,
+               'page_obj': page_obj,
+               'user_profile': user_profile}
     template = 'blog/profile.html'
     return render(request, template, context)
 
