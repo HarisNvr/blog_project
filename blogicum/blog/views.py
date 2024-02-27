@@ -1,6 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
+from django.http import Http404
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.utils import timezone
@@ -53,14 +54,28 @@ def homepage(request):
     return render(request, template, context)
 
 
-def detail(request, post_id):
+def get_post_details(post_id):
     post = get_object_or_404(Post, pk=post_id)
     form = CommentaryForm()
-    comments = (Commentary.objects.filter(post_id=post_id)
-                .order_by('created_at'))
-    template = 'blog/detail.html'
-    context = {'post': post, 'form': form, 'comments': comments}
-    return render(request, template, context)
+    comments = Commentary.objects.filter(post_id=post_id).order_by('created_at')
+    return post, form, comments
+
+
+def detail(request, post_id):
+    post, form, comments = get_post_details(post_id)
+
+    if (post.is_published == 0 or post.category.is_published == 0 or
+            post.pub_date > timezone.now()):
+        if post.author == request.user:
+            template = 'blog/detail.html'
+            context = {'post': post, 'form': form, 'comments': comments}
+            return render(request, template, context)
+        else:
+            raise Http404
+    else:
+        template = 'blog/detail.html'
+        context = {'post': post, 'form': form, 'comments': comments}
+        return render(request, template, context)
 
 
 def category(request, category_slug):
@@ -78,14 +93,9 @@ def category(request, category_slug):
 
 
 @login_required
-def posting(request, pk=None):
-    instance = None
-    if pk is not None:
-        instance = get_object_or_404(Post, pk=pk)
-    form = PostForm(request.POST or None,
-                    files=request.FILES or None,
-                    instance=instance)
+def create_post(request):
     if request.method == 'POST':
+        form = PostForm(request.POST, request.FILES)
         if form.is_valid():
             post = form.save(commit=False)
             post.author = request.user
@@ -93,6 +103,28 @@ def posting(request, pk=None):
             post_detail_url = reverse_lazy('blog:profile',
                                            args=[request.user.username])
             return redirect(post_detail_url)
+    else:
+        form = PostForm()
+    context = {'form': form}
+    return render(request, 'blog/create.html', context)
+
+
+def edit_post(request, pk):
+    print(request.user.is_authenticated)
+    post = get_object_or_404(Post, pk=pk)
+    if request.user != post.author and request.user.is_authenticated:
+        return redirect('blog:post_detail', post_id=pk)
+    elif not request.user.is_authenticated:
+        return redirect('login')
+    if request.method == 'POST':
+        form = PostForm(request.POST, request.FILES, instance=post)
+        if form.is_valid():
+            form.save()
+            post_detail_url = reverse_lazy('blog:profile',
+                                           args=[request.user.username])
+            return redirect(post_detail_url)
+    else:
+        form = PostForm(instance=post)
     context = {'form': form}
     return render(request, 'blog/create.html', context)
 
@@ -102,7 +134,8 @@ def delete_post(request, pk):
     instance = get_object_or_404(Post, pk=pk)
     form = PostForm(instance=instance)
     context = {'form': form}
-    if request.method == 'POST':
+    if (request.method == 'POST' and
+            (request.user == instance.author or request.user.is_superuser)):
         instance.delete()
         return redirect('blog:homepage')
     return render(request, 'blog/create.html', context)
@@ -117,12 +150,22 @@ def manage_comment(request, post_id, comment_id=None):
     if request.method == 'POST':
         if '/delete_comment' in request.path:
             comment = get_object_or_404(Commentary, id=comment_id)
-            comment.delete()
-            post.comment_count -= 1
-            post.save()
-            return redirect('blog:post_detail', post_id=post_id)
+            if comment.author == request.user:
+                comment.delete()
+                post.comment_count -= 1
+                post.save()
+                return redirect('blog:post_detail', post_id=post_id)
+            else:
+                raise Http404
         else:
-            form = CommentaryForm(request.POST or None, instance=instance)
+            if comment_id is not None:
+                comment = get_object_or_404(Commentary, id=comment_id)
+                if comment.author == request.user:
+                    form = CommentaryForm(request.POST, instance=instance)
+                else:
+                    raise Http404
+            else:
+                form = CommentaryForm(request.POST, instance=instance)
             if form.is_valid():
                 comment = form.save(commit=False)
                 comment.author = request.user
@@ -137,9 +180,16 @@ def manage_comment(request, post_id, comment_id=None):
                                                args=[post_id])
                 return redirect(post_detail_url)
     else:
-        form = CommentaryForm(instance=instance)
-
-    context = {'form': form, 'comment': instance}
+        if comment_id is not None:
+            comment = get_object_or_404(Commentary, id=comment_id)
+            if comment.author == request.user:
+                form = CommentaryForm(instance=instance)
+            else:
+                raise Http404
+        else:
+            form = CommentaryForm(instance=instance)
+    context = {'form': form, 'comment': instance} if (
+            '/delete_comment' not in request.path) else {'comment': instance}
     return render(request, 'blog/comment.html', context)
 
 
