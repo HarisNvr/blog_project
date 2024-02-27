@@ -79,18 +79,32 @@ def category(request, category_slug):
 
 
 @login_required
-def posting(request, pk=None):
-    instance = None
-    if pk is not None:
-        instance = get_object_or_404(Post, pk=pk)
-    form = PostForm(request.POST or None,
-                    files=request.FILES or None,
-                    instance=instance)
+def create_post(request):
+    form = PostForm(request.POST or None, files=request.FILES or None)
     if request.method == 'POST':
         if form.is_valid():
             post = form.save(commit=False)
             post.author = request.user
             post.save()
+            post_detail_url = reverse_lazy('blog:profile',
+                                           args=[request.user.username])
+            return redirect(post_detail_url)
+    context = {'form': form}
+    return render(request, 'blog/create.html', context)
+
+
+@login_required
+def edit_post(request, pk):
+    instance = get_object_or_404(Post, pk=pk)
+    if request.user != instance.author:
+        return redirect('blog:post_detail', post_id=pk)
+    elif request.user is not request.user.is_authenticated:
+        return redirect('login')
+    form = PostForm(request.POST or None, files=request.FILES or None,
+                    instance=instance)
+    if request.method == 'POST':
+        if form.is_valid():
+            form.save()
             post_detail_url = reverse_lazy('blog:profile',
                                            args=[request.user.username])
             return redirect(post_detail_url)
