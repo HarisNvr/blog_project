@@ -57,15 +57,16 @@ def homepage(request):
 def get_post_details(post_id):
     post = get_object_or_404(Post, pk=post_id)
     form = CommentaryForm()
-    comments = Commentary.objects.filter(post_id=post_id).order_by('created_at')
+    comments = (Commentary.objects.filter(post_id=post_id)
+                .order_by('created_at'))
     return post, form, comments
 
 
 def detail(request, post_id):
     post, form, comments = get_post_details(post_id)
 
-    if (post.is_published == 0 or post.category.is_published == 0 or
-            post.pub_date > timezone.now()):
+    if (post.is_published == 0 or post.category.is_published == 0
+            or post.pub_date > timezone.now()):
         if post.author == request.user:
             template = 'blog/detail.html'
             context = {'post': post, 'form': form, 'comments': comments}
@@ -134,62 +135,64 @@ def delete_post(request, pk):
     instance = get_object_or_404(Post, pk=pk)
     form = PostForm(instance=instance)
     context = {'form': form}
-    if (request.method == 'POST' and
-            (request.user == instance.author or request.user.is_superuser)):
+    if (request.method == 'POST'
+            and (request.user == instance.author
+                 or request.user.is_superuser)):
         instance.delete()
         return redirect('blog:homepage')
     return render(request, 'blog/create.html', context)
 
 
 @login_required
-def manage_comment(request, post_id, comment_id=None):
+def create_comment(request, post_id):
     post = get_object_or_404(base_request(), pk=post_id)
-    instance = None
-    if comment_id is not None:
-        instance = get_object_or_404(Commentary, id=comment_id)
     if request.method == 'POST':
-        if '/delete_comment' in request.path:
-            comment = get_object_or_404(Commentary, id=comment_id)
-            if comment.author == request.user:
-                comment.delete()
-                post.comment_count -= 1
-                post.save()
-                return redirect('blog:post_detail', post_id=post_id)
-            else:
-                raise Http404
-        else:
-            if comment_id is not None:
-                comment = get_object_or_404(Commentary, id=comment_id)
-                if comment.author == request.user:
-                    form = CommentaryForm(request.POST, instance=instance)
-                else:
-                    raise Http404
-            else:
-                form = CommentaryForm(request.POST, instance=instance)
-            if form.is_valid():
-                comment = form.save(commit=False)
-                comment.author = request.user
-                comment.post = post
-                comment.save()
-
-                if comment_id is None:
-                    post.comment_count += 1
-                    post.save()
-
-                post_detail_url = reverse_lazy('blog:post_detail',
-                                               args=[post_id])
-                return redirect(post_detail_url)
+        form = CommentaryForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.author = request.user
+            comment.post = post
+            comment.save()
+            post.comment_count += 1
+            post.save()
+            post_detail_url = reverse_lazy('blog:post_detail', args=[post_id])
+            return redirect(post_detail_url)
     else:
-        if comment_id is not None:
-            comment = get_object_or_404(Commentary, id=comment_id)
-            if comment.author == request.user:
-                form = CommentaryForm(instance=instance)
-            else:
-                raise Http404
-        else:
-            form = CommentaryForm(instance=instance)
-    context = {'form': form, 'comment': instance} if (
-            '/delete_comment' not in request.path) else {'comment': instance}
+        form = CommentaryForm()
+    context = {'form': form}
+    return render(request, 'blog/comment.html', context)
+
+
+@login_required
+def edit_comment(request, post_id, comment_id):
+    comment = get_object_or_404(Commentary, id=comment_id)
+    if comment.author != request.user:
+        raise Http404
+    if request.method == 'POST':
+        form = CommentaryForm(request.POST, instance=comment)
+        if form.is_valid():
+            form.save()
+            post_detail_url = reverse_lazy('blog:post_detail', args=[post_id])
+            return redirect(post_detail_url)
+    else:
+        form = CommentaryForm(instance=comment)
+    context = {'form': form, 'comment': comment}
+    return render(request, 'blog/comment.html', context)
+
+
+@login_required
+def delete_comment(request, post_id, comment_id):
+    post = get_object_or_404(base_request(), pk=post_id)
+    comment = get_object_or_404(Commentary, id=comment_id)
+    if comment.author != request.user:
+        raise Http404
+    if request.method == 'POST':
+        comment.delete()
+        post.comment_count -= 1
+        post.save()
+        post_detail_url = reverse_lazy('blog:post_detail', args=[post_id])
+        return redirect(post_detail_url)
+    context = {'comment': comment}
     return render(request, 'blog/comment.html', context)
 
 
