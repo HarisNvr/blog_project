@@ -98,8 +98,8 @@ def get_post_details(post_id):
 
 def detail(request, post_id):
     post, form, comments = get_post_details(post_id)
-    if ((post.is_published and post.category.is_published and
-         post.pub_date <= timezone.now()) or post.author == request.user):
+    if ((post.is_published and post.category.is_published
+         and post.pub_date <= timezone.now()) or post.author == request.user):
         template = 'blog/detail.html'
         context = {'post': post, 'form': form, 'comments': comments}
         return render(request, template, context)
