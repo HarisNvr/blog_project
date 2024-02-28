@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 
-USER = get_user_model()
+User = get_user_model()
 MX_CHARS = 256
 
 
@@ -71,7 +71,7 @@ class Post(BaseModel):
                   'отложенные публикации.'
     )
     author = models.ForeignKey(
-        USER,
+        User,
         on_delete=models.CASCADE,
         verbose_name='Автор публикации',
         related_name='posts'
@@ -96,10 +96,6 @@ class Post(BaseModel):
         upload_to='post_images',
         blank=True
     )
-    comment_count = models.IntegerField(
-        default=0,
-        verbose_name='Кол-во комментов',
-    )
 
     class Meta:
         verbose_name = 'публикация'
@@ -111,16 +107,22 @@ class Post(BaseModel):
 
 
 class Commentary(models.Model):
-    text = models.TextField('Текст комментария')
+    text = models.TextField(verbose_name='Текст комментария')
     post = models.ForeignKey(
         Post,
         on_delete=models.CASCADE,
-        related_name='commentary',
+        related_name='commentaries',
+        verbose_name='Пост'
     )
-    created_at = models.DateTimeField(auto_now_add=True)
-    author = models.ForeignKey(USER, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True,
+                                      verbose_name='Создан')
+    author = models.ForeignKey(User, on_delete=models.CASCADE,
+                               verbose_name='Автор')
 
     class Meta:
         ordering = ('created_at',)
         verbose_name = 'комментарий'
         verbose_name_plural = 'Комментарии'
+
+    def __str__(self):
+        return self.text

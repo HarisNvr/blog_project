@@ -4,6 +4,8 @@ from django.urls import reverse_lazy
 
 LOGIN_REDIRECT_URL = reverse_lazy('blog:homepage')
 
+LOGIN_URL = '/auth/login/'
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 MEDIA_ROOT = BASE_DIR / 'media'

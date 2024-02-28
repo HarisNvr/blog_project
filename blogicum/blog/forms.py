@@ -8,7 +8,7 @@ from .models import Commentary, Post
 class PostForm(ModelForm):
     class Meta:
         model = Post
-        fields = ['title', 'text', 'location', 'category', 'image', 'pub_date']
+        exclude = ['author', 'is_published']
         widgets = {
             'pub_date': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
         }
