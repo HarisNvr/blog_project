@@ -14,6 +14,8 @@ MEDIA_URL = 'media/'
 
 SECRET_KEY = 'django-insecure-c%jyu_a*$kum3nv01y5km)m_nx9*#cxv=wv@6(cc7+w7bsan%d'
 
+TIME_ZONE = 'Europe/Moscow'
+
 USE_L10N = False
 
 DEBUG = True
@@ -100,8 +102,6 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 LANGUAGE_CODE = 'ru-RU'
-
-TIME_ZONE = 'Europe/Moscow'
 
 USE_I18N = True
 
