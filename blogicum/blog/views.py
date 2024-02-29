@@ -14,19 +14,19 @@ POSTS_PER_PAGE = 10
 
 
 def base_queryset(comment_count=False, filtration=False):
-    request = Post.objects.select_related(
+    queryset = Post.objects.select_related(
         'category',
         'author',
         'location').order_by('-pub_date')
     if filtration:
-        request = request.filter(
+        queryset = queryset.filter(
             is_published=True,
             category__is_published=True,
             pub_date__lte=timezone.now()
         )
     if comment_count:
-        request = request.annotate(comment_count=Count('commentaries'))
-    return request
+        queryset = queryset.annotate(comment_count=Count('commentaries'))
+    return queryset
 
 
 def post_paginator(request, context_posts, page_count=POSTS_PER_PAGE):
@@ -44,21 +44,22 @@ def profile_view(request, username):
         filtration=profile != user
     ).filter(author_id=profile.pk)
     page_obj = post_paginator(request, context_posts)
-    context = {'user': user,
-               'page_obj': page_obj,
-               'profile': profile}
+    context = {
+        'user': user,
+        'page_obj': page_obj,
+        'profile': profile
+    }
     template = 'blog/profile.html'
     return render(request, template, context)
 
 
 @login_required
 def edit_profile(request):
-    username = request.user
-    user = get_object_or_404(User, username=username)
+    user = request.user
     form = UserProfileForm(request.POST or None, instance=user)
     if form.is_valid():
         form.save()
-        return redirect('blog:profile', username=username)
+        return redirect('blog:profile', username=user)
     context = {
         'form': form,
         'user': user
@@ -132,7 +133,7 @@ def edit_post(request, post_id):
                     instance=post)
     if form.is_valid():
         form.save()
-        return redirect('blog:profile', username=request.user)
+        return redirect('blog:profile', username=request.user.username)
     context = {'form': form}
     return render(request, 'blog/create.html', context)
 
