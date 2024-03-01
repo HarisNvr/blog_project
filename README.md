@@ -1,1 +1,1 @@
-# django_sprint4
+# BlogiCUM Project by HarisNvr
